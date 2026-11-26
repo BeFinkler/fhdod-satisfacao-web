@@ -6,14 +6,17 @@ import { BarraProgresso } from './BarraProgresso'
 /**
  * Moldura de todas as telas da pesquisa: logo e progresso em cima, conteúdo no meio e,
  * embaixo, "Voltar" sempre à esquerda e "Pular" sempre à direita.
+ * `rodapeFixo`: o rodapé fica preso ao pé da tela enquanto o conteúdo rola (lista longa de setores).
  */
 export function Moldura({
   progresso,
   rodape,
+  rodapeFixo = false,
   children,
 }: {
   progresso?: number
   rodape?: ReactNode
+  rodapeFixo?: boolean
   children: ReactNode
 }) {
   return (
@@ -31,7 +34,16 @@ export function Moldura({
       <main className="@container flex flex-1 flex-col pt-7 alta:min-h-[30rem] alta:flex-none sm:pt-10">
         {children}
       </main>
-      <footer className="mt-5 flex min-h-12 items-center justify-between gap-3">{rodape}</footer>
+      <footer
+        className={cn(
+          'mt-5 flex min-h-12 items-center justify-between gap-3',
+          // preso embaixo, com fundo: a lista passa por trás, e uma sombra curta mostra que ela continua
+          rodapeFixo &&
+            'sticky bottom-0 -mx-5 -mb-5 mt-3 bg-background px-5 pt-3 pb-5 shadow-[0_-14px_14px_-6px_var(--background)] sm:-mx-8 sm:-mb-8 sm:px-8 sm:pb-8',
+        )}
+      >
+        {rodape}
+      </footer>
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import type { PesquisaPublica } from '@/lib/api/tipos'
+import { AberturaDoSetor } from '../components/AberturaDoSetor'
 import { BotaoDiscreto, BotaoPrincipal } from '../components/botoes'
 import { CarregaPesquisa } from '../components/CarregaPesquisa'
 import { Etapas } from '../components/Etapas'
@@ -37,6 +38,7 @@ function Totem({ pesquisa, aoReiniciar }: { pesquisa: PesquisaPublica; aoReinici
       <Etapas
         pesquisa={pesquisa}
         fluxo={fluxo}
+        abertura={<AberturaDoSetor setor={pesquisa.setor.nome} aoComecar={fluxo.comecar} />}
         reinicio={{ segundos: pesquisa.totem.reinicioSegundos, aoReiniciar: reiniciar }}
       />
       {inatividade.avisando && <AindaEstaAi aoContinuar={inatividade.continuar} aoReiniciar={reiniciar} />}

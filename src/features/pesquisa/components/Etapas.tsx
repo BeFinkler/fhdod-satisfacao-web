@@ -1,9 +1,9 @@
-import { ArrowLeft, Clock, ShieldCheck } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { ArrowLeft } from 'lucide-react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { ErroApi, mensagemDeErro } from '@/lib/api/erro'
 import type { PesquisaPublica } from '@/lib/api/tipos'
-import { NIVEIS } from '@/lib/escala'
-import type { FluxoPesquisa } from '../hooks/useFluxoPesquisa'
+import { telefoneDepoisDoComentario } from '../fluxo'
+import type { FluxoDasEtapas } from '../hooks/useFluxoPesquisa'
 import { BotaoDiscreto, BotaoPrincipal } from './botoes'
 import { CampoIsca } from './CampoIsca'
 import { EscalaNps } from './EscalaNps'
@@ -12,18 +12,37 @@ import { EtapaContato } from './EtapaContato'
 import { EtapaData, EtapaTurno } from './EtapaDataTurno'
 import { Aviso, Moldura, Titulo } from './Moldura'
 import { Pergunta } from './Pergunta'
+import { MarcadorDoSetor } from './setores'
 import { TelaAgradecimento } from './TelaAgradecimento'
 
-/** Desenha a etapa atual da pesquisa. É a mesma sequência no celular, no computador e no totem. */
+/**
+ * Desenha a etapa atual da pesquisa. É a mesma sequência no celular, no computador, no totem e na pesquisa
+ * geral; o que muda vem pelas props: a abertura de cada uma e, na geral, o setor de cada pergunta e do comentário.
+ */
 export function Etapas({
   pesquisa,
   fluxo,
+  abertura,
   reinicio,
+  setorDaPergunta,
+  escolhaDoSetor,
+  avaliacaoBaixa,
+  avaliados,
 }: {
-  pesquisa: PesquisaPublica
-  fluxo: FluxoPesquisa
+  pesquisa: Pick<PesquisaPublica, 'turnos' | 'npsTexto' | 'textoLimiteCaracteres'>
+  fluxo: FluxoDasEtapas
+  /** a primeira tela: o setor do QR Code ou, na pesquisa geral, a escolha dos setores */
+  abertura: ReactNode
   /** só no totem: contagem para a próxima avaliação */
   reinicio?: { segundos: number; aoReiniciar: () => void }
+  /** pesquisa geral: o setor da pergunta na tela, com o número dele quando há mais de um */
+  setorDaPergunta?: { nome: string; ordem?: number; primeira: boolean }
+  /** pesquisa geral: "Sobre qual setor?", na tela do comentário, quando há mais de um */
+  escolhaDoSetor?: ReactNode
+  /** pesquisa geral: a pergunta do comentário vale para a visita toda, não só para o setor escolhido */
+  avaliacaoBaixa?: boolean
+  /** pesquisa geral: os setores avaliados, para o agradecimento */
+  avaliados?: string[]
 }) {
   const { estado } = fluxo
   const conteudo = useRef<HTMLDivElement>(null)
@@ -43,6 +62,7 @@ export function Etapas({
       ? 'O tempo para complementar terminou. Sua avaliação já está salva.'
       : `${mensagemDeErro(fluxo.complemento.erro, 'Não deu para enviar agora.')} Sua avaliação já está salva.`
     : null
+  const baixa = avaliacaoBaixa ?? (estado.criada !== null && estado.criada.classificacao !== 'NORMAL')
 
   const voltar = (
     <BotaoDiscreto onClick={fluxo.voltar} className="-ml-4">
@@ -52,43 +72,11 @@ export function Etapas({
   )
 
   if (estado.etapa === 'abertura') {
+    // `contents`: a abertura desenha a própria moldura; esta caixa só guarda a referência para o foco
     return (
-      <Moldura>
-        <div ref={conteudo} className="flex flex-1 flex-col justify-center">
-          {/* os cinco rostos já carregam aqui, para não piscarem na primeira pergunta */}
-          <div aria-hidden className="flex gap-2">
-            {NIVEIS.map((nivel) => (
-              <img
-                key={nivel.valor}
-                src={nivel.imagem}
-                alt=""
-                width={96}
-                height={96}
-                className="size-12 sm:size-14"
-              />
-            ))}
-          </div>
-          <Titulo className="mt-6 text-[2rem]/[1.1] sm:text-[2.5rem]/[1.1]">
-            Como foi o seu atendimento?
-          </Titulo>
-          {/* o setor vem da URL do QR Code: fica bem visível para a pessoa conferir */}
-          <p className="mt-4 text-muted-foreground">Você está avaliando</p>
-          <p className="text-2xl font-semibold">{pesquisa.setor.nome}</p>
-          <ul className="mt-6 grid gap-3">
-            <li className="flex items-center gap-3">
-              <ShieldCheck aria-hidden className="size-6 shrink-0 text-primary" />É anônimo: você não precisa
-              dizer seu nome.
-            </li>
-            <li className="flex items-center gap-3">
-              <Clock aria-hidden className="size-6 shrink-0 text-primary" />
-              Leva menos de 2 minutos.
-            </li>
-          </ul>
-          <BotaoPrincipal className="mt-8" onClick={fluxo.comecar}>
-            Começar avaliação
-          </BotaoPrincipal>
-        </div>
-      </Moldura>
+      <div ref={conteudo} className="contents">
+        {abertura}
+      </div>
     )
   }
 
@@ -96,7 +84,7 @@ export function Etapas({
     return (
       <Moldura progresso={1}>
         <div ref={conteudo} className="flex flex-1 flex-col">
-          <TelaAgradecimento reinicio={reinicio} />
+          <TelaAgradecimento reinicio={reinicio} avaliados={avaliados} />
         </div>
       </Moldura>
     )
@@ -127,7 +115,18 @@ export function Etapas({
 
         {fluxo.perguntaAtual && (
           <>
-            <Titulo>{fluxo.perguntaAtual.texto}</Titulo>
+            {setorDaPergunta && (
+              <MarcadorDoSetor
+                nome={setorDaPergunta.nome}
+                ordem={setorDaPergunta.ordem}
+                entrando={setorDaPergunta.primeira}
+              />
+            )}
+            <Titulo>
+              {/* o marcador do setor é só visual: o leitor de tela ouve o setor aqui, junto com a pergunta */}
+              {setorDaPergunta && <span className="sr-only">{setorDaPergunta.nome}: </span>}
+              {fluxo.perguntaAtual.texto}
+            </Titulo>
             <div className="mt-6">
               <Pergunta
                 pergunta={fluxo.perguntaAtual}
@@ -172,7 +171,9 @@ export function Etapas({
 
         {estado.etapa === 'comentario' && estado.criada && (
           <EtapaComentario
-            avaliacaoBaixa={estado.criada.classificacao !== 'NORMAL'}
+            avaliacaoBaixa={baixa}
+            telefoneDepois={telefoneDepoisDoComentario(estado)}
+            escolhaDoSetor={escolhaDoSetor}
             inicial={estado.comentario}
             limite={pesquisa.textoLimiteCaracteres}
             enviando={fluxo.complemento.pendente}
@@ -184,6 +185,7 @@ export function Etapas({
 
         {estado.etapa === 'contato' && (
           <EtapaContato
+            avaliacaoBaixa={baixa}
             enviando={fluxo.complemento.pendente}
             erro={erroDoComplemento}
             aoEnviar={fluxo.concluir}

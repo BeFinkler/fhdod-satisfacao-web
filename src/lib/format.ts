@@ -39,6 +39,14 @@ export const decimal = (valor: number) =>
 /** NPS com sinal: +51, 0, −12 */
 export const npsComSinal = (nps: number) => (nps > 0 ? `+${nps}` : nps < 0 ? `−${Math.abs(nps)}` : '0')
 
+const conjuncao = new Intl.ListFormat('pt-BR', { style: 'long', type: 'conjunction' })
+
+/**
+ * "Raio-X, Laboratório e Internação" em partes: os nomes e os separadores. Assim a tela pode impedir a quebra
+ * de linha dentro de um nome (o hífen de "Raio-X" quebraria).
+ */
+export const partesDaLista = (nomes: string[]) => conjuncao.formatToParts(nomes)
+
 /** Máscara brasileira enquanto a pessoa digita: (51) 99999-0000 ou (51) 3333-0000. */
 export function mascararTelefone(valor: string) {
   const d = valor.replace(/\D/g, '').slice(0, 11)

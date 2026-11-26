@@ -1,4 +1,5 @@
 import type { PesquisaPublica } from '@/lib/api/tipos'
+import { AberturaDoSetor } from '../components/AberturaDoSetor'
 import { CarregaPesquisa } from '../components/CarregaPesquisa'
 import { Etapas } from '../components/Etapas'
 import { useFluxoPesquisa } from '../hooks/useFluxoPesquisa'
@@ -10,5 +11,11 @@ export default function PesquisaPage() {
 
 function Pesquisa({ pesquisa }: { pesquisa: PesquisaPublica }) {
   const fluxo = useFluxoPesquisa(pesquisa, 'WEB')
-  return <Etapas pesquisa={pesquisa} fluxo={fluxo} />
+  return (
+    <Etapas
+      pesquisa={pesquisa}
+      fluxo={fluxo}
+      abertura={<AberturaDoSetor setor={pesquisa.setor.nome} aoComecar={fluxo.comecar} />}
+    />
+  )
 }

@@ -30,6 +30,8 @@ export interface EstadoFluxo {
   /** o que a API devolveu ao gravar; a classificação vem pronta de lá */
   criada: RespostaCriada | null
   comentario: Comentario | null
+  /** web: a última tela oferece o telefone a todos; no totem, só na avaliação baixa */
+  telefoneSempre: boolean
 }
 
 export type AcaoFluxo =
@@ -45,7 +47,11 @@ export type AcaoFluxo =
   | { tipo: 'CONCLUIR' }
   | { tipo: 'REINICIAR'; chaveIdempotencia: string }
 
-export const estadoInicial = (perguntaIds: number[], chaveIdempotencia: string): EstadoFluxo => ({
+export const estadoInicial = (
+  perguntaIds: number[],
+  chaveIdempotencia: string,
+  { telefoneSempre = false }: { telefoneSempre?: boolean } = {},
+): EstadoFluxo => ({
   etapa: 'abertura',
   indice: 0,
   perguntaIds,
@@ -57,7 +63,15 @@ export const estadoInicial = (perguntaIds: number[], chaveIdempotencia: string):
   chaveIdempotencia,
   criada: null,
   comentario: null,
+  telefoneSempre,
 })
+
+/**
+ * Depois do comentário vem a tela do telefone? Na web, sempre; no totem, só quando a API classificou a avaliação
+ * como baixa ou baixíssima. O front não decide o que é nota baixa: lê a classificação que veio da API.
+ */
+export const telefoneDepoisDoComentario = (e: EstadoFluxo): boolean =>
+  e.telefoneSempre || (e.criada !== null && e.criada.classificacao !== 'NORMAL')
 
 /** Vai para a pergunta pedida ou, se as perguntas acabaram, para a nota de recomendação. */
 const irPara = (e: EstadoFluxo, indice: number): EstadoFluxo =>
@@ -114,8 +128,8 @@ export function redutor(e: EstadoFluxo, acao: AcaoFluxo): EstadoFluxo {
       return e.etapa === 'nps' && e.nps !== null ? { ...e, criada: acao.criada, etapa: 'comentario' } : e
 
     case 'COMENTAR':
-      // avaliação baixa: guarda o comentário e oferece o retorno por telefone
-      return e.etapa === 'comentario' && e.criada && e.criada.classificacao !== 'NORMAL'
+      // guarda o comentário e oferece o retorno por telefone, que vai junto com ele na mesma chamada
+      return e.etapa === 'comentario' && e.criada && telefoneDepoisDoComentario(e)
         ? { ...e, comentario: acao.comentario, etapa: 'contato' }
         : e
 
@@ -123,7 +137,7 @@ export function redutor(e: EstadoFluxo, acao: AcaoFluxo): EstadoFluxo {
       return e.criada ? { ...e, etapa: 'agradecimento' } : e
 
     case 'REINICIAR':
-      return estadoInicial(e.perguntaIds, acao.chaveIdempotencia)
+      return estadoInicial(e.perguntaIds, acao.chaveIdempotencia, { telefoneSempre: e.telefoneSempre })
   }
 }
 

@@ -6,6 +6,7 @@ import {
   novaChave,
   progresso,
   redutor,
+  telefoneDepoisDoComentario,
   turnoDoHorario,
   type AcaoFluxo,
   type EstadoFluxo,
@@ -170,6 +171,43 @@ describe('nota de recomendação obrigatória', () => {
     )
     expect(redutor(e, { tipo: 'VOLTAR' })).toBe(e)
     expect(redutor(e, { tipo: 'SELECIONAR_NPS', nps: 1 })).toBe(e)
+  })
+})
+
+describe('telefone para retorno', () => {
+  const comentario = { tipo: 'ELOGIO', texto: 'Fui muito bem atendido' } as const
+  const enviadaComNota = (estado: EstadoFluxo, classificacao: RespostaCriada['classificacao']) =>
+    aplicar(
+      estado,
+      ...ateAsPerguntas,
+      { tipo: 'PULAR' },
+      { tipo: 'PULAR' },
+      { tipo: 'PULAR' },
+      { tipo: 'SELECIONAR_NPS', nps: 10 },
+      { tipo: 'ENVIADA', criada: criada(classificacao) },
+    )
+
+  it('na web, vem depois do comentário para todos, também com "Agora não"', () => {
+    const web = enviadaComNota(estadoInicial([11, 12, 13], 'chave-1', { telefoneSempre: true }), 'NORMAL')
+
+    expect(telefoneDepoisDoComentario(web)).toBe(true)
+    expect(redutor(web, { tipo: 'COMENTAR', comentario })).toMatchObject({ etapa: 'contato', comentario })
+    expect(redutor(web, { tipo: 'COMENTAR', comentario: null })).toMatchObject({
+      etapa: 'contato',
+      comentario: null,
+    })
+  })
+
+  it('no totem, só a avaliação que a API classificou como baixa passa por ele', () => {
+    expect(telefoneDepoisDoComentario(enviadaComNota(inicio(), 'NORMAL'))).toBe(false)
+    expect(telefoneDepoisDoComentario(enviadaComNota(inicio(), 'BAIXA'))).toBe(true)
+    expect(telefoneDepoisDoComentario(enviadaComNota(inicio(), 'BAIXISSIMA'))).toBe(true)
+  })
+
+  it('o reinício mantém a regra do telefone', () => {
+    const web = estadoInicial([11], 'chave-1', { telefoneSempre: true })
+
+    expect(redutor(web, { tipo: 'REINICIAR', chaveIdempotencia: 'chave-2' }).telefoneSempre).toBe(true)
   })
 })
 
