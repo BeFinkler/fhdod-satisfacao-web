@@ -159,9 +159,10 @@
     user-select: text;
   }
 
-  /* TV: a tipografia acompanha o tamanho da tela (Full HD e 4K). */
+  /* TV: a tipografia acompanha o tamanho da tela (HD, Full HD e 4K): vale a menor das proporções, para a tela
+     caber inteira também em TVs menos largas. */
   html.tv {
-    font-size: clamp(14px, 0.84vw, 40px);
+    font-size: clamp(10px, min(0.84vw, 1.49vh), 40px);
     overflow: hidden;
   }
 
@@ -170,6 +171,7 @@
     ::before,
     ::after {
       animation-duration: 0.01ms !important;
+      animation-delay: 0s !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
@@ -225,4 +227,47 @@
   to {
     transform: scaleX(1);
   }
+}
+
+/* TV Wall: troca de visão. A que sai some num instante (MS_DA_SAIDA, em TvPage.tsx); a que entra aparece com os
+   itens subindo um depois do outro e as barras crescendo da linha de base. Tudo termina em menos de 1,5 s, para
+   sobrar quase todo o tempo da visão para a leitura, e nada pisca nem gira. */
+@keyframes tv-aparece {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes tv-entra {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+}
+@keyframes tv-cresce {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes tv-sai {
+  to {
+    opacity: 0;
+    transform: translateY(-0.75rem);
+  }
+}
+.tv-visao,
+.tv-titulo {
+  animation: tv-aparece 0.5s ease-out both;
+}
+.tv-item {
+  animation: tv-entra 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(0.1s + var(--ordem, 0) * 0.08s);
+}
+.tv-barra {
+  transform-origin: left;
+  animation: tv-cresce 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(0.3s + var(--ordem, 0) * 0.08s);
+}
+.tv-visao.tv-saindo,
+.tv-titulo.tv-saindo {
+  animation: tv-sai 0.45s cubic-bezier(0.4, 0, 1, 1) both;
 }
