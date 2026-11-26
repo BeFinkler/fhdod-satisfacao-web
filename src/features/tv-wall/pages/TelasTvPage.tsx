@@ -1,8 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
-import { Plus } from 'lucide-react'
+import { CircleQuestionMark, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { Link } from 'react-router'
 import { z } from 'zod'
 import { CampoCopiavel, DialogoFormulario } from '@/components/crud'
 import { CampoTexto, ErroDoFormulario } from '@/components/formulario'
@@ -64,7 +65,8 @@ function Formulario({
 
 /** /painel/tv: telas de TV Wall. O link com o token aparece uma única vez, ao criar. */
 export default function TelasTvPage() {
-  const consulta = useQuery({ queryKey: ['tv-telas'], queryFn: listarTelas })
+  // a lista se atualiza sozinha: quem acabou de abrir o link na TV vê o "Último acesso" aparecer aqui
+  const consulta = useQuery({ queryKey: ['tv-telas'], queryFn: listarTelas, refetchInterval: 15_000 })
   const [criando, setCriando] = useState(false)
   const [criada, setCriada] = useState<{ nome: string; link: string } | null>(null)
   const status = useSalvar(({ id, ativa }: { id: number; ativa: boolean }) => alterarStatusTela(id, ativa), {
@@ -77,10 +79,19 @@ export default function TelasTvPage() {
       titulo="Telas de TV"
       descricao="A TV mostra só números gerais: nunca comentários, reclamações ou telefones. Quem tem o link abre a tela sem senha, então desative a tela se o link vazar."
       acoes={
-        <Button onClick={() => setCriando(true)}>
-          <Plus aria-hidden />
-          Nova tela
-        </Button>
+        <>
+          {/* à vista para quem já fechou a janela do link: o passo a passo fica na Ajuda */}
+          <Button variant="outline" asChild>
+            <Link to="/painel/ajuda#tv">
+              <CircleQuestionMark aria-hidden />
+              Como colocar na TV
+            </Link>
+          </Button>
+          <Button onClick={() => setCriando(true)}>
+            <Plus aria-hidden />
+            Nova tela
+          </Button>
+        </>
       }
     >
       <Bloco>
@@ -139,11 +150,30 @@ export default function TelasTvPage() {
           <DialogHeader>
             <DialogTitle>Link da tela {criada?.nome}</DialogTitle>
             <DialogDescription>
-              Copie agora e abra no navegador da TV: este link não aparece de novo. Se perder, desative esta
-              tela e crie outra.
+              Copie agora: este link não aparece de novo. Se perder, desative esta tela e crie outra.
             </DialogDescription>
           </DialogHeader>
           {criada && <CampoCopiavel rotulo="Link da TV" valor={criada.link} />}
+          <div className="grid gap-2 text-sm">
+            <p className="font-semibold">Para colocar no ar</p>
+            <ol className="grid list-decimal gap-1.5 pl-5 text-muted-foreground marker:font-semibold marker:text-foreground">
+              <li>
+                Abra o link no navegador da TV. Se quem instala a TV é outra pessoa, como a TI, mande o link
+                para ela por e-mail ou pelo chat interno: ela não precisa entrar no painel.
+              </li>
+              <li>Toque uma vez na tela da TV, para ela ficar em tela cheia.</li>
+              <li>
+                Confira aqui o &quot;Último acesso&quot; da tela: ele aparece em instantes e mostra que a TV
+                abriu.
+              </li>
+            </ol>
+            <Link
+              to="/painel/ajuda#tv"
+              className="w-fit font-semibold text-primary underline underline-offset-4 hover:no-underline"
+            >
+              Passo a passo completo e dicas, na Ajuda
+            </Link>
+          </div>
           <DialogFooter>
             <Button onClick={() => setCriada(null)}>Já copiei</Button>
           </DialogFooter>
