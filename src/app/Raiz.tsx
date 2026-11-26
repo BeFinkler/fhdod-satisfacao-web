@@ -42,14 +42,15 @@ function useVLibrasNaPagina() {
  * que guardaria as posições no sessionStorage: o front não guarda nada no navegador.
  */
 function useTopoAoTrocarDePagina() {
-  const { pathname } = useLocation()
+  const { pathname, hash } = useLocation()
   const tipo = useNavigationType()
   const anterior = useRef(pathname)
   useEffect(() => {
     if (anterior.current === pathname) return
     anterior.current = pathname
-    if (tipo !== 'POP') window.scrollTo(0, 0)
-  }, [pathname, tipo])
+    // com âncora (/painel/ajuda#tv), quem rola até a seção é a própria página
+    if (tipo !== 'POP' && !hash) window.scrollTo(0, 0)
+  }, [pathname, hash, tipo])
 }
 
 /** Cada área (pesquisa, totem, painel, TV) é baixada só quando alguém a acessa. */

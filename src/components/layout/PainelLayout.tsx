@@ -1,17 +1,4 @@
-import {
-  Building2,
-  ChartColumn,
-  ChevronDown,
-  KeyRound,
-  LogOut,
-  Menu,
-  MessagesSquare,
-  PhoneCall,
-  Tags,
-  Tv,
-  Users,
-  type LucideIcon,
-} from 'lucide-react'
+import { ChevronDown, KeyRound, LogOut, Menu } from 'lucide-react'
 import { Suspense, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router'
 import logo from '@/assets/logo.png'
@@ -35,55 +22,17 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Toaster } from '@/components/ui/sonner'
 import { sair } from '@/features/auth/api'
-import type { Permissao } from '@/lib/api/tipos'
 import { ROTULO_PERFIL } from '@/lib/rotulos'
 import { cn } from '@/lib/utils'
 import { useSessao } from '@/stores/sessao'
+import { gruposDoMenu } from './menu'
 
-interface ItemDoMenu {
-  para: string
-  rotulo: string
-  icone: LucideIcon
-  /** basta ter uma delas */
-  permissoes: Permissao[]
-}
+const SEM_PERMISSOES: never[] = []
 
-// Dois grupos: acompanhar os resultados e configurar a pesquisa.
-const MENU: ItemDoMenu[][] = [
-  [
-    { para: '/painel', rotulo: 'Indicadores', icone: ChartColumn, permissoes: ['dashboard:ver'] },
-    { para: '/painel/respostas', rotulo: 'Respostas', icone: MessagesSquare, permissoes: ['respostas:ver'] },
-    {
-      para: '/painel/contatos',
-      rotulo: 'Pedidos de retorno',
-      icone: PhoneCall,
-      permissoes: ['contatos:ver'],
-    },
-  ],
-  [
-    {
-      para: '/painel/setores',
-      rotulo: 'Setores e perguntas',
-      icone: Building2,
-      permissoes: ['setores:gerenciar', 'perguntas:gerenciar'],
-    },
-    {
-      para: '/painel/cadastros',
-      rotulo: 'Categorias e turnos',
-      icone: Tags,
-      permissoes: ['categorias:gerenciar', 'turnos:gerenciar'],
-    },
-    { para: '/painel/usuarios', rotulo: 'Usuários', icone: Users, permissoes: ['usuarios:gerenciar'] },
-    { para: '/painel/tv', rotulo: 'Telas de TV', icone: Tv, permissoes: ['tvwall:gerenciar'] },
-  ],
-]
-
-/** O menu mostra só o que o usuário pode acessar, pela lista de permissões do /auth/me. */
+/** O menu mostra só o que o usuário pode acessar, pela lista de permissões do /auth/me, e a Ajuda, no fim. */
 function Navegacao({ aoNavegar }: { aoNavegar?: () => void }) {
-  const permissoes = useSessao((s) => s.sessao?.permissoes ?? [])
-  const grupos = MENU.map((grupo) =>
-    grupo.filter((item) => item.permissoes.some((p) => permissoes.includes(p))),
-  ).filter((grupo) => grupo.length > 0)
+  const permissoes = useSessao((s) => s.sessao?.permissoes ?? SEM_PERMISSOES)
+  const grupos = gruposDoMenu(permissoes)
   return (
     <nav aria-label="Menu do painel" className="grid gap-3">
       {grupos.map((grupo, i) => (

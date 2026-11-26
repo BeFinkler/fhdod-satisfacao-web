@@ -19,6 +19,7 @@ const PerguntasPage = lazy(() => import('@/features/perguntas/pages/PerguntasPag
 const CadastrosPage = lazy(() => import('@/features/cadastros/pages/CadastrosPage'))
 const UsuariosPage = lazy(() => import('@/features/usuarios/pages/UsuariosPage'))
 const TelasTvPage = lazy(() => import('@/features/tv-wall/pages/TelasTvPage'))
+const AjudaPage = lazy(() => import('@/features/ajuda/pages/AjudaPage'))
 const ExigeSessao = lazy(() => import('./guards').then((m) => ({ default: m.ExigeSessao })))
 const ExigePermissao = lazy(() => import('./guards').then((m) => ({ default: m.ExigePermissao })))
 
@@ -62,6 +63,8 @@ export const router = createBrowserRouter([
               },
               { path: 'usuarios', element: com(['usuarios:gerenciar'], <UsuariosPage />) },
               { path: 'tv', element: com(['tvwall:gerenciar'], <TelasTvPage />) },
+              // a ajuda é de todos os perfis: cada seção aparece pelas permissões de quem lê
+              { path: 'ajuda', element: <AjudaPage /> },
               { path: '*', element: <NaoEncontrada /> },
             ],
           },
