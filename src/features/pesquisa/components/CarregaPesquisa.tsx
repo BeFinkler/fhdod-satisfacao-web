@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
-import { useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
 import { Carregando, TelaMensagem } from '@/components/TelaMensagem'
 import { ErroApi } from '@/lib/api/erro'
 import type { PesquisaPublica } from '@/lib/api/tipos'
@@ -32,7 +32,20 @@ export function CarregaPesquisa({
   if (consulta.isError) {
     const indisponivel = consulta.error instanceof ErroApi && consulta.error.status === 404
     return indisponivel ? (
-      <TelaMensagem titulo="Esta pesquisa não está disponível">
+      <TelaMensagem
+        titulo="Esta pesquisa não está disponível"
+        acao={
+          // no celular, quem leu um QR Code antigo ainda pode avaliar pela pesquisa geral; o totem fica onde está
+          !totem && (
+            <Link
+              to="/avaliar"
+              className="font-semibold text-primary underline underline-offset-4 hover:no-underline"
+            >
+              Escolher o setor na pesquisa geral
+            </Link>
+          )
+        }
+      >
         <p>O endereço pode estar incompleto ou a pesquisa deste setor está pausada.</p>
         <p className="mt-2">Aponte a câmera de novo para o QR Code ou peça ajuda na recepção.</p>
       </TelaMensagem>

@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 import type { TipoComentario } from '@/lib/api/tipos'
 import { ROTULO_COMENTARIO } from '@/lib/rotulos'
 import { cn } from '@/lib/utils'
@@ -15,6 +15,8 @@ const TIPOS: TipoComentario[] = ['ELOGIO', 'RECLAMACAO', 'SUGESTAO', 'OUTRO']
  */
 export function EtapaComentario({
   avaliacaoBaixa,
+  telefoneDepois,
+  escolhaDoSetor,
   inicial,
   limite,
   enviando,
@@ -23,6 +25,10 @@ export function EtapaComentario({
   aoPular,
 }: {
   avaliacaoBaixa: boolean
+  /** a tela do telefone vem depois: o comentário fica guardado e vai junto com ele */
+  telefoneDepois: boolean
+  /** pesquisa geral com mais de um setor: "Sobre qual setor?" */
+  escolhaDoSetor?: ReactNode
   inicial: Comentario | null
   limite: number
   enviando: boolean
@@ -43,6 +49,8 @@ export function EtapaComentario({
         {avaliacaoBaixa ? 'Quer contar o que aconteceu?' : 'Quer deixar um elogio ou uma sugestão?'}
       </Titulo>
       <p className="mt-2 text-muted-foreground">Sua avaliação já foi enviada. Escrever é opcional.</p>
+
+      {escolhaDoSetor}
 
       <div
         role="group"
@@ -92,7 +100,7 @@ export function EtapaComentario({
         disabled={!texto.trim() || enviando}
         onClick={() => aoEnviar({ tipo, texto: texto.trim() })}
       >
-        {enviando ? 'Enviando…' : avaliacaoBaixa ? 'Continuar' : 'Enviar comentário'}
+        {enviando ? 'Enviando…' : telefoneDepois ? 'Continuar' : 'Enviar comentário'}
       </BotaoPrincipal>
       <BotaoDiscreto className="mt-2 w-full" disabled={enviando} onClick={aoPular}>
         Agora não

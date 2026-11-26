@@ -1,10 +1,22 @@
 // Rotas públicas da pesquisa, sem login. Só este arquivo conversa com a API.
 import { api, pedir } from '@/lib/api/cliente'
-import type { Complemento, EnvioResposta, PesquisaPublica, RespostaCriada } from '@/lib/api/tipos'
+import type {
+  Complemento,
+  EnvioGeral,
+  EnvioResposta,
+  PesquisaGeral,
+  PesquisaPublica,
+  RespostaCriada,
+  RespostaCriadaDoSetor,
+} from '@/lib/api/tipos'
 
 /** GET /publico/setores/:slug/pesquisa */
 export const buscarPesquisa = async (slug: string): Promise<PesquisaPublica> =>
   (await pedir(api.GET('/api/v1/publico/setores/{slug}/pesquisa', { params: { path: { slug } } }))).data
+
+/** GET /publico/pesquisa: a pesquisa geral, com os setores ativos e as perguntas de cada um. */
+export const buscarPesquisaGeral = async (): Promise<PesquisaGeral> =>
+  (await pedir(api.GET('/api/v1/publico/pesquisa'))).data
 
 /** POST /publico/setores/:slug/respostas */
 export const enviarResposta = async (slug: string, corpo: EnvioResposta): Promise<RespostaCriada> =>
@@ -13,6 +25,10 @@ export const enviarResposta = async (slug: string, corpo: EnvioResposta): Promis
       api.POST('/api/v1/publico/setores/{slug}/respostas', { params: { path: { slug } }, body: corpo }),
     )
   ).data
+
+/** POST /publico/respostas: uma avaliação por setor escolhido, na ordem do pedido. */
+export const enviarRespostasGerais = async (corpo: EnvioGeral): Promise<RespostaCriadaDoSetor[]> =>
+  (await pedir(api.POST('/api/v1/publico/respostas', { body: corpo }))).data
 
 /**
  * POST /publico/respostas/:id/complemento, com o token do envio no cabeçalho X-Complemento-Token.

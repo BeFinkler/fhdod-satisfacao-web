@@ -6,14 +6,17 @@ import { Aviso, Titulo } from './Moldura'
 
 /**
  * Pedido de retorno: telefone opcional, com máscara brasileira e consentimento explícito,
- * nunca marcado de antemão, dizendo quem verá o número.
+ * nunca marcado de antemão, dizendo quem verá o número. Na web, é a última pergunta para todos.
  */
 export function EtapaContato({
+  avaliacaoBaixa,
   enviando,
   erro,
   aoEnviar,
   aoRecusar,
 }: {
+  /** a explicação muda: conversar sobre o que aconteceu ou sobre a avaliação */
+  avaliacaoBaixa: boolean
   enviando: boolean
   erro: string | null
   aoEnviar: (contato: NonNullable<Complemento['contato']>) => void
@@ -45,7 +48,9 @@ export function EtapaContato({
     <>
       <Titulo>Quer que o hospital entre em contato com você?</Titulo>
       <p className="mt-2 text-muted-foreground">
-        Se quiser, deixe um telefone. A Ouvidoria liga para conversar sobre o que aconteceu.
+        {avaliacaoBaixa
+          ? 'Se quiser, deixe um telefone. A Ouvidoria liga para conversar sobre o que aconteceu.'
+          : 'Se quiser, deixe um telefone. A Ouvidoria pode ligar para conversar sobre a sua avaliação.'}
       </p>
 
       <label htmlFor={`${id}-telefone`} className="mt-6 block font-semibold">

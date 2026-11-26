@@ -18,14 +18,19 @@ export function NaoEncontrada() {
     <TelaMensagem
       titulo="Página não encontrada"
       acao={
-        <Link to="/login" className={classeDoLink}>
-          Ir para o painel da gestão
-        </Link>
+        <div className="flex flex-col items-start gap-4">
+          <Link to="/avaliar" className={classeDoLink}>
+            Avaliar o atendimento
+          </Link>
+          <Link to="/login" className={classeDoLink}>
+            Ir para o painel da gestão
+          </Link>
+        </div>
       }
     >
       <p>
-        Este endereço não existe. Se você veio avaliar o atendimento, aponte a câmera de novo para o QR Code
-        do setor.
+        Este endereço não existe. Se você veio avaliar o atendimento, use o link abaixo ou aponte a câmera de
+        novo para o QR Code do setor.
       </p>
     </TelaMensagem>
   )

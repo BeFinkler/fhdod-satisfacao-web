@@ -65,7 +65,7 @@ O paciente avalia o atendimento pelo celular, lendo o QR Code do setor, ou pelo 
 
 | | Área | Para quem | O que faz |
 | :---: | --- | --- | --- |
-| 📱 | **Pesquisa** | O paciente, no celular, no tablet e no totem | Os rostinhos de 1 a 5 e a nota de 0 a 10, com comentário e telefone para retorno opcionais. No totem, reinicia sozinha para o próximo paciente |
+| 📱 | **Pesquisa** | O paciente, no celular, no tablet e no totem | Pelo QR Code do setor ou pelo link geral (`/avaliar`), em que a pessoa escolhe os setores. Os rostinhos de 1 a 5 e a nota de 0 a 10, com comentário e telefone para retorno opcionais. No totem, reinicia sozinha para o próximo paciente |
 | 📊 | **Painel** | A gestão, no computador e no celular | Indicadores, respostas, pedidos de retorno, cadastros, usuários, telas de TV e exportações, com o menu de cada perfil |
 | 📺 | **TV Wall** | A recepção, numa TV em tela cheia | Os números do mês, renovados a cada 30 segundos, sem nenhum dado pessoal |
 
@@ -127,6 +127,7 @@ O `pnpm dev` repassa tudo o que começa com `/api` para a API em `http://localho
 | Endereço | O que abre |
 | --- | --- |
 | <http://localhost:5173/login> | O painel: entre com uma das contas abaixo |
+| <http://localhost:5173/avaliar> | A pesquisa geral, no lugar do link do Google Forms: a pessoa escolhe os setores e responde só as perguntas deles |
 | <http://localhost:5173/s/pronto-atendimento> | A pesquisa do setor, para onde o QR Code leva |
 | <http://localhost:5173/totem/pronto-atendimento> | A mesma pesquisa no modo totem |
 | <http://localhost:5173/tv#demo-recepcao-fhdod> | A TV Wall da tela de demonstração |

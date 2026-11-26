@@ -5,6 +5,7 @@ import { ErroInesperado, NaoEncontrada, Raiz } from './Raiz'
 
 // Uma área por arquivo baixado: quem abre a pesquisa pelo QR Code não baixa nada do painel.
 const PesquisaPage = lazy(() => import('@/features/pesquisa/pages/PesquisaPage'))
+const PesquisaGeralPage = lazy(() => import('@/features/pesquisa/pages/PesquisaGeralPage'))
 const TotemPage = lazy(() => import('@/features/pesquisa/pages/TotemPage'))
 const TvPage = lazy(() => import('@/features/tv-wall/pages/TvPage'))
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'))
@@ -33,6 +34,8 @@ export const router = createBrowserRouter([
     children: [
       { path: '/', element: <Navigate to="/login" replace /> },
       { path: '/s/:setor', element: <PesquisaPage /> },
+      // o link geral, que substitui o do Google Forms: a pessoa escolhe os setores
+      { path: '/avaliar', element: <PesquisaGeralPage /> },
       { path: '/totem/:setor', element: <TotemPage /> },
       { path: '/tv', element: <TvPage /> },
       { path: '/login', element: <LoginPage /> },

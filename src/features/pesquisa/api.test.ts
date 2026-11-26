@@ -59,6 +59,54 @@ describe('rotas públicas da pesquisa', () => {
     expect(await pedido.json()).toEqual(corpo)
   })
 
+  it('abre a pesquisa geral, com os setores ativos', async () => {
+    resposta = () =>
+      json(200, { data: { setores: [{ nome: 'Raio-X', slug: 'raio-x', descricao: null, perguntas: [] }] } })
+    const pesquisa = await api.buscarPesquisaGeral()
+    expect(pesquisa.setores.map(({ slug }) => slug)).toEqual(['raio-x'])
+    expect(chamadas[0]!.method).toBe('GET')
+    expect(chamadas[0]!.url).toBe('http://site.teste/api/v1/publico/pesquisa')
+  })
+
+  it('envia a avaliação de vários setores de uma vez e devolve uma por setor', async () => {
+    const criadas = [
+      {
+        slug: 'raio-x',
+        id: 846,
+        classificacao: 'BAIXA',
+        tokenComplemento: 'a',
+        expiraEm: '2026-11-10T14:52:00Z',
+      },
+      {
+        slug: 'laboratorio',
+        id: 847,
+        classificacao: 'NORMAL',
+        tokenComplemento: 'b',
+        expiraEm: '2026-11-10T14:52:00Z',
+      },
+    ]
+    resposta = () => json(201, { data: criadas })
+    const corpo = {
+      canal: 'WEB' as const,
+      dataAtendimento: '2026-11-10',
+      turnoId: 1,
+      nps: 8,
+      site: '',
+      setores: [
+        { slug: 'raio-x', chaveIdempotencia: '4b7e0c1a-9d2f-4c11-8a35-1f0e6b2d7c90', itens: [] },
+        {
+          slug: 'laboratorio',
+          chaveIdempotencia: '9c1d2e3f-4a5b-4c6d-8e7f-0a1b2c3d4e5f',
+          itens: [{ perguntaId: 21, valorNumero: 5 }],
+        },
+      ],
+    }
+    await expect(api.enviarRespostasGerais(corpo)).resolves.toEqual(criadas)
+    const pedido = chamadas[0]!
+    expect([pedido.method, pedido.url]).toEqual(['POST', 'http://site.teste/api/v1/publico/respostas'])
+    expect(await pedido.json()).toEqual(corpo)
+  })
+
   it('manda o complemento com o token no cabeçalho, numa requisição que sobrevive ao fechar a página', async () => {
     resposta = () => new Response(null, { status: 204 })
     const corpo = { comentario: { tipo: 'RECLAMACAO' as const, texto: 'Esperei muito na triagem.' } }
