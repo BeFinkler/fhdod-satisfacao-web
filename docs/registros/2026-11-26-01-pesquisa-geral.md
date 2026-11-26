@@ -2,7 +2,7 @@
 
 26/11/2026 · Agente (Claude Code)
 
-> Ticket [11](../tickets/11-pesquisa-geral.md). A issue ainda não existe no GitHub, porque o `gh` da máquina não estava logado. Depende do ticket 21 da API, na branch `feat/21-pesquisa-geral` de lá.
+> Ticket [11](../tickets/11-pesquisa-geral.md), issue [#22](https://github.com/GabrielPittaBr/fhdod-satisfacao-web/issues/22). Depende do ticket 21 da API: issue [#44](https://github.com/GabrielPittaBr/fhdod-satisfacao-api/issues/44) e PR [#45](https://github.com/GabrielPittaBr/fhdod-satisfacao-api/pull/45).
 >
 > O hospital divulga hoje um link do Google Forms. Nele a pessoa escolhe o setor e, no fim, deixa um telefone para retorno. O `/avaliar` substitui esse link: a pessoa marca os setores por onde passou e responde só as perguntas deles, um setor depois do outro. A nota de 0 a 10 vem no fim e vale para todos, e a pesquisa termina com o comentário e o telefone. Na web, o telefone passou a ser a última pergunta para todos, também no `/s/:setor`.
 
@@ -118,7 +118,8 @@ O `fluxo.ts` ganhou o `telefoneSempre`. O `useFluxoPesquisa` o liga no canal `WE
 
 ## Pendências e dúvidas
 
-- **Issue e PR:** criar a issue do ticket 11 e abrir o PR para a `develop` depois do PR da API, os dois citando um ao outro. Precisa do `gh auth login`. O PR leva prints no celular e no computador.
+- **Revisão:** o PR entra na `develop` depois do PR #45 da API, com a aprovação de outra pessoa do time. Depois do merge, a issue #22 é fechada à mão.
+- **Prints do PR:** o `AGENTS.md` pede prints no celular e no computador, mas pelo `gh` não dá para anexar imagens. Elas entram pelo GitHub, arrastadas para o PR.
 - **Confirmar com o hospital:**
   - o telefone oferecido a todos na web (mais telefones guardados, também de pacientes satisfeitos);
   - o endereço `/avaliar` para o QR Code e o WhatsApp.

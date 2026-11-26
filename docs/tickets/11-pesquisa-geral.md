@@ -1,6 +1,6 @@
 # 11 — Pesquisa geral: escolha dos setores no lugar do Google Forms
 
-**Issue:** ainda não criada no GitHub. O `gh` da máquina em que o ticket foi escrito não estava logado. Os números de 11 a 21 já são pull requests, então a issue terá outro número, que entra aqui quando ela for criada.
+**Issue:** [#22](https://github.com/GabrielPittaBr/fhdod-satisfacao-web/issues/22). O número não é o do ticket porque os números de 11 a 21 já eram pull requests.
 
 **O que construir:** Hoje o hospital divulga um link do Google Forms. Nele a pessoa escolhe o setor que quer avaliar e, no fim, pode deixar um telefone para retorno. A pesquisa geral substitui esse link: é o `/avaliar`. A pessoa marca um ou mais setores e responde só as perguntas deles, um setor depois do outro. Data, turno e a nota de 0 a 10 são perguntados uma vez, e a pesquisa termina com o comentário e o telefone, como no Forms. Na web, o telefone passa a ser a última pergunta para todos, também no `/s/:setor`; no totem, continua só na avaliação baixa. O Super Admin encontra o link geral e o QR Code dele em Setores.
 
