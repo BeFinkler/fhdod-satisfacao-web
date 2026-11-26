@@ -1,11 +1,44 @@
-import { Suspense } from 'react'
-import { Link, Outlet } from 'react-router'
+import { Suspense, useEffect } from 'react'
+import { Link, Outlet, useLocation } from 'react-router'
 import { Carregando, TelaMensagem } from '@/components/TelaMensagem'
+import { carregarVLibras } from '@/lib/vlibras'
+import { useAcessibilidade } from '@/stores/acessibilidade'
 
 const classeDoLink = 'font-semibold text-primary underline underline-offset-4 hover:no-underline'
 
+/** O tamanho do texto escolhido em "Acessibilidade" vale para todas as telas, até a pessoa recarregar a página. */
+function useTamanhoDoTexto() {
+  const tamanho = useAcessibilidade((s) => s.tamanhoDoTexto)
+  useEffect(() => {
+    const html = document.documentElement
+    if (tamanho === 'normal') delete html.dataset.texto
+    else html.dataset.texto = tamanho
+  }, [tamanho])
+}
+
+/**
+ * O botão do VLibras entra depois que a tela já abriu, quando o navegador está livre, para não atrasar a
+ * pesquisa. Fica fora da TV, que ninguém toca, e do totem, que não pode guardar nada entre um paciente e outro.
+ */
+function useVLibrasNaPagina() {
+  const semVLibras = /^\/(tv|totem)(\/|$)/.test(useLocation().pathname)
+  useEffect(() => {
+    if (semVLibras) return
+    const carregar = () => void carregarVLibras().catch(() => undefined)
+    // versões antigas do Safari, no iPhone, não têm o requestIdleCallback
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(carregar, { timeout: 4000 })
+      return () => window.cancelIdleCallback(id)
+    }
+    const id = window.setTimeout(carregar, 1500)
+    return () => window.clearTimeout(id)
+  }, [semVLibras])
+}
+
 /** Cada área (pesquisa, totem, painel, TV) é baixada só quando alguém a acessa. */
 export function Raiz() {
+  useTamanhoDoTexto()
+  useVLibrasNaPagina()
   return (
     <Suspense fallback={<Carregando />}>
       <Outlet />

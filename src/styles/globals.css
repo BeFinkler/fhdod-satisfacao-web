@@ -166,6 +166,28 @@
     overflow: hidden;
   }
 
+  /* Tamanho do texto escolhido em "Acessibilidade". Como o Tailwind mede tudo em rem, texto, espaços, campos e
+     botões crescem juntos. A TV e o totem têm a própria escala e ficam de fora. */
+  html[data-texto='grande']:not(.tv, .totem) {
+    font-size: 115%;
+  }
+  html[data-texto='muito-grande']:not(.tv, .totem) {
+    font-size: 130%;
+  }
+
+  /* O botão do VLibras não aparece na TV, que ninguém toca, nem no totem, que não guarda nada entre pacientes. */
+  html:is(.tv, .totem) #vlibras-access-wrapper,
+  html:is(.tv, .totem) #vlibras-app-root {
+    display: none !important;
+  }
+  /* No celular, o botão flutuante do VLibras ficaria em cima das opções da pesquisa: lá, ele abre pelo menu
+     "Acessibilidade", em "Traduzir para Libras", que fica no topo de todas as telas. */
+  @media (width < 40rem) {
+    #vlibras-access-wrapper {
+      display: none;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *,
     ::before,
