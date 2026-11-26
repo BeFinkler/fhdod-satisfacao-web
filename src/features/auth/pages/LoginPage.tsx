@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { Navigate, useLocation, useNavigate } from 'react-router'
 import logo from '@/assets/logo.png'
 import { CampoTexto, ErroDoFormulario } from '@/components/formulario'
+import { MenuAcessibilidade } from '@/components/MenuAcessibilidade'
 import { aplicarErroDaApi } from '@/lib/salvar'
 import { Button } from '@/components/ui/button'
 import { useSessao } from '@/stores/sessao'
@@ -31,13 +32,16 @@ export default function LoginPage() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-5 py-10">
       <title>Entrar no painel | FHDOD</title>
-      <img
-        src={logo}
-        alt="FHDOD, Fundação Hospitalar Dr. Oswaldo Diesel"
-        width={450}
-        height={150}
-        className="h-12 w-auto self-start"
-      />
+      <div className="@container flex items-center justify-between gap-4">
+        <img
+          src={logo}
+          alt="FHDOD, Fundação Hospitalar Dr. Oswaldo Diesel"
+          width={450}
+          height={150}
+          className="h-12 w-auto"
+        />
+        <MenuAcessibilidade rotulo="se-couber" className="-mr-2.5" />
+      </div>
       <h1 className="mt-8 text-2xl font-bold">Painel da pesquisa de satisfação</h1>
       <p className="mt-1 text-muted-foreground">
         Entre com o e-mail e a senha que o hospital criou para você.

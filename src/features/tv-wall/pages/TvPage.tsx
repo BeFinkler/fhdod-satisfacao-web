@@ -1,18 +1,21 @@
 import { useQuery } from '@tanstack/react-query'
+import { format, parseISO } from 'date-fns'
+import { ptBR } from 'date-fns/locale/pt-BR'
 import { WifiOff } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { useLocation } from 'react-router'
 import logo from '@/assets/logo.png'
-import { GraficoEvolucao } from '@/components/charts/GraficoEvolucao'
 import { ErroApi } from '@/lib/api/erro'
 import type { IndicadoresTv } from '@/lib/api/tipos'
 import { nivelDaMedia } from '@/lib/escala'
 import { decimal, hora, npsComSinal, numero } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { buscarIndicadoresTv } from '../api'
+import { setoresDaParte, tituloDaVisao, visoesDaTv, type Visao } from '../visoes'
 
 const SEGUNDOS_POR_VISAO = 15
-const VISOES = ['Visão geral do mês', 'NPS por setor', 'Evolução do NPS', 'Destaques positivos'] as const
+/** A visão que sai some neste tempo antes de a próxima entrar (globals.css, em "TV Wall"). */
+const MS_DA_SAIDA = 450
 
 // Par divergente escolhido para o fundo escuro e conferido para daltonismo (validador da skill dataviz).
 const PARTES = [
@@ -22,6 +25,20 @@ const PARTES = [
 ] as const
 
 const respostas = (total: number) => `${numero(total)} ${total === 1 ? 'resposta' : 'respostas'}`
+/** A ordem de um item na entrada da visão: um depois do outro, de cima para baixo. */
+const naOrdem = (ordem: number) => ({ '--ordem': ordem }) as CSSProperties
+
+/** "Novembro de 2026": o mês dos números, pelo horário em que a API os gerou. */
+const mesDosNumeros = (geradoEm: string) => {
+  const mes = format(parseISO(geradoEm), "MMMM 'de' yyyy", { locale: ptBR })
+  return mes.charAt(0).toUpperCase() + mes.slice(1)
+}
+
+function subtituloDaVisao(visao: Visao, dados: IndicadoresTv) {
+  if (visao.tipo === 'destaques') return 'Últimos 30 dias · o ponto mais bem avaliado de cada setor'
+  const mes = mesDosNumeros(dados.geradoEm)
+  return visao.tipo === 'geral' ? `${mes} · todos os setores` : `${mes} · do maior para o menor`
+}
 
 function VisaoGeral({ mes }: { mes: IndicadoresTv['mes'] }) {
   if (mes.total === 0 || mes.nps === null)
@@ -29,15 +46,18 @@ function VisaoGeral({ mes }: { mes: IndicadoresTv['mes'] }) {
   const nivel = mes.mediaEscala === null ? null : nivelDaMedia(mes.mediaEscala)
   return (
     <div className="grid w-full grid-cols-[auto_1fr] items-center gap-[6rem]">
-      <div>
+      <div className="tv-item" style={naOrdem(0)}>
         <p className="text-[2.5rem] text-muted-foreground">NPS deste mês</p>
-        <p className="text-[17rem]/[1] font-bold tracking-tight">{npsComSinal(mes.nps)}</p>
+        <p className="numeros text-[17rem]/[1] font-bold tracking-tight">{npsComSinal(mes.nps)}</p>
         {/* a nota vem sempre com o tamanho da amostra */}
         <p className="mt-[1rem] text-[3rem]">em {respostas(mes.total)}</p>
+        <p className="mt-[0.5rem] text-[1.75rem] text-muted-foreground">
+          Índice de recomendação, de −100 a +100
+        </p>
       </div>
       <div className="grid gap-[3.5rem]">
         {nivel && mes.mediaEscala !== null && (
-          <div className="flex items-center gap-[2.5rem]">
+          <div className="tv-item flex items-center gap-[2.5rem]" style={naOrdem(1)}>
             <img src={nivel.imagem} alt="" width={96} height={96} className="size-[11rem]" />
             <div>
               <p className="text-[2.5rem] text-muted-foreground">Média das notas de 1 a 5</p>
@@ -47,8 +67,8 @@ function VisaoGeral({ mes }: { mes: IndicadoresTv['mes'] }) {
             </div>
           </div>
         )}
-        <div>
-          <div className="flex h-[3.5rem] gap-[0.25rem]">
+        <div className="tv-item" style={naOrdem(2)}>
+          <div className="tv-barra flex h-[3.5rem] gap-[0.25rem]" style={naOrdem(2)}>
             {PARTES.map((parte) => (
               <span
                 key={parte.chave}
@@ -71,34 +91,37 @@ function VisaoGeral({ mes }: { mes: IndicadoresTv['mes'] }) {
   )
 }
 
-function PorSetor({ setores }: { setores: IndicadoresTv['npsPorSetor'] }) {
+function PorSetor({ setores, minimo }: { setores: IndicadoresTv['npsPorSetor']; minimo: number }) {
   if (setores.length === 0)
     return <p className="text-[3rem] text-muted-foreground">Ainda não há respostas neste mês.</p>
-  const minimo = setores.some((s) => (s.nps ?? 0) < 0) ? -100 : 0
   return (
-    <ul className="grid w-full gap-[2rem]">
-      {setores.map((s) => {
+    <ul className="grid w-full gap-[1.75rem]">
+      {setores.map((s, i) => {
         const nps = s.nps ?? 0
         const largura = (Math.abs(nps) / (100 - minimo)) * 100
         const zero = ((0 - minimo) / (100 - minimo)) * 100
         return (
           <li
             key={s.setor}
-            className="grid grid-cols-[34rem_1fr_30rem] items-center gap-[2.5rem] text-[2.75rem]"
+            className="tv-item grid grid-cols-[34rem_1fr_30rem] items-center gap-[2.5rem] text-[2.75rem]/[1.2]"
+            style={naOrdem(i)}
           >
-            <span className="truncate font-semibold">{s.setor}</span>
+            {/* nome longo quebra em duas linhas, em vez de ser cortado: na TV ninguém passa o mouse para ler */}
+            <span className="line-clamp-2 font-semibold text-balance">{s.setor}</span>
             <span className="relative h-[2.5rem] border-l-2 border-input">
               <span
-                className="absolute inset-y-0"
+                className="tv-barra absolute inset-y-0"
                 style={{
+                  ...naOrdem(i),
                   left: `${nps < 0 ? zero - largura : zero}%`,
                   width: `${Math.max(largura, 0.5)}%`,
                   backgroundColor: nps < 0 ? '#e2634f' : 'var(--primary)',
                   borderRadius: nps < 0 ? '0.5rem 0 0 0.5rem' : '0 0.5rem 0.5rem 0',
+                  transformOrigin: nps < 0 ? 'right' : 'left',
                 }}
               />
             </span>
-            <span className="text-right">
+            <span className="numeros text-right">
               <strong className="text-[3.5rem]">{npsComSinal(nps)}</strong>{' '}
               <span className="text-[2rem] text-muted-foreground">em {respostas(s.total)}</span>
             </span>
@@ -116,10 +139,14 @@ function Destaques({ destaques }: { destaques: IndicadoresTv['destaques'] }) {
     )
   return (
     <ul className="grid w-full grid-cols-3 gap-[3rem]">
-      {destaques.map((d) => {
+      {destaques.map((d, i) => {
         const nivel = nivelDaMedia(d.media)
         return (
-          <li key={`${d.setor}-${d.categoria}`} className="rounded-[1.5rem] bg-card p-[3rem]">
+          <li
+            key={`${d.setor}-${d.categoria}`}
+            className="tv-item rounded-[1.5rem] bg-card p-[3rem]"
+            style={naOrdem(i)}
+          >
             <img src={nivel.imagem} alt="" width={96} height={96} className="size-[9rem]" />
             <p className="mt-[2rem] text-[3.25rem]/[1.15] font-bold">{d.categoria}</p>
             <p className="text-[2.25rem] text-muted-foreground">{d.setor}</p>
@@ -148,11 +175,37 @@ function Mensagem({ titulo, texto }: { titulo: string; texto: string }) {
   )
 }
 
+/**
+ * Passa para a próxima visão a cada `SEGUNDOS_POR_VISAO`: a atual some em `MS_DA_SAIDA` e a próxima entra. Com
+ * "reduzir movimento" ligado no aparelho, a troca é direta. `passo` só cresce; a visão é `passo % quantas`.
+ */
+function useRotacao() {
+  const [passo, setPasso] = useState(0)
+  const [saindo, setSaindo] = useState(false)
+  useEffect(() => {
+    const semMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    let saida: number | undefined
+    const troca = window.setInterval(() => {
+      if (semMovimento) return setPasso((atual) => atual + 1)
+      setSaindo(true)
+      saida = window.setTimeout(() => {
+        setPasso((atual) => atual + 1)
+        setSaindo(false)
+      }, MS_DA_SAIDA)
+    }, SEGUNDOS_POR_VISAO * 1000)
+    return () => {
+      window.clearInterval(troca)
+      window.clearTimeout(saida)
+    }
+  }, [])
+  return { passo, saindo }
+}
+
 /** /tv#<token>: tela pública para corredores e recepções. Só números gerais, nunca dado pessoal. */
 export default function TvPage() {
   // o token vem depois do "#": essa parte da URL não é enviada ao servidor
   const token = useLocation().hash.slice(1)
-  const [visao, setVisao] = useState(0)
+  const { passo, saindo } = useRotacao()
   const consulta = useQuery({
     queryKey: ['tv', token],
     queryFn: () => buscarIndicadoresTv(token),
@@ -168,17 +221,12 @@ export default function TvPage() {
 
   useEffect(() => {
     document.documentElement.classList.add('tv')
-    const troca = window.setInterval(
-      () => setVisao((atual) => (atual + 1) % VISOES.length),
-      SEGUNDOS_POR_VISAO * 1000,
-    )
     const telaCheia = () => {
       if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => undefined)
     }
     document.addEventListener('click', telaCheia)
     return () => {
       document.documentElement.classList.remove('tv')
-      window.clearInterval(troca)
       document.removeEventListener('click', telaCheia)
     }
   }, [])
@@ -201,14 +249,18 @@ export default function TvPage() {
     )
   }
 
-  const fonteBase = parseFloat(getComputedStyle(document.documentElement).fontSize)
+  const visoes = visoesDaTv(dados.npsPorSetor.length)
+  const atual = passo % visoes.length
+  const visao = visoes[atual]!
+  // a mesma escala em todas as partes do "NPS por setor", para as barras serem comparáveis entre elas
+  const minimo = dados.npsPorSetor.some((s) => (s.nps ?? 0) < 0) ? -100 : 0
 
   return (
     <div className="dark fixed inset-0 flex flex-col bg-background px-[4rem] py-[3rem] text-foreground">
       <title>TV Wall | FHDOD</title>
       <header className="flex items-center justify-between gap-[2rem]">
         {/* logo sobre placa branca: o vermelho da marca continua legível no fundo escuro */}
-        <span className="rounded-[0.75rem] bg-white px-[1.25rem] py-[0.75rem]">
+        <span className="shrink-0 rounded-[0.75rem] bg-white px-[1.25rem] py-[0.75rem]">
           <img
             src={logo}
             alt="FHDOD, Fundação Hospitalar Dr. Oswaldo Diesel"
@@ -217,46 +269,43 @@ export default function TvPage() {
             className="h-[4rem] w-auto"
           />
         </span>
-        <h1 className="text-[3rem] font-bold">{VISOES[visao]}</h1>
+        <div key={passo} className={cn('tv-titulo text-right', saindo && 'tv-saindo')}>
+          <h1 className="text-[3rem]/[1.2] font-bold">{tituloDaVisao(visao)}</h1>
+          <p className="text-[1.75rem] text-muted-foreground">{subtituloDaVisao(visao, dados)}</p>
+        </div>
       </header>
 
-      <main className="flex min-h-0 flex-1 items-center py-[2rem]">
-        {visao === 0 && <VisaoGeral mes={dados.mes} />}
-        {visao === 1 && <PorSetor setores={dados.npsPorSetor} />}
-        {visao === 2 && (
-          <div className="w-full">
-            <GraficoEvolucao
-              dados={dados.evolucao}
-              granularidade="SEMANA"
-              altura={window.innerHeight * 0.44}
-              fonte={fonteBase * 1.5}
-            />
-            <p className="mt-[1rem] text-[2rem] text-muted-foreground">
-              Uma marca por semana. As colunas mostram quantas respostas cada semana teve.
-            </p>
-          </div>
+      <main
+        key={passo}
+        className={cn('tv-visao flex min-h-0 flex-1 items-center py-[2rem]', saindo && 'tv-saindo')}
+      >
+        {visao.tipo === 'geral' && <VisaoGeral mes={dados.mes} />}
+        {visao.tipo === 'setores' && (
+          <PorSetor setores={setoresDaParte(dados.npsPorSetor, visao.parte)} minimo={minimo} />
         )}
-        {visao === 3 && <Destaques destaques={dados.destaques} />}
+        {visao.tipo === 'destaques' && <Destaques destaques={dados.destaques} />}
       </main>
 
       <footer className="flex items-center gap-[2rem] text-[1.75rem] text-muted-foreground">
         {/* qual visão está na tela e quanto falta para a próxima */}
         <ol className="flex flex-1 gap-[0.75rem]" aria-label="Visões da tela">
-          {VISOES.map((nome, i) => (
+          {visoes.map((v, i) => (
             <li
-              key={nome}
-              aria-current={i === visao ? 'step' : undefined}
+              key={tituloDaVisao(v)}
+              aria-current={i === atual ? 'step' : undefined}
               className="h-[0.5rem] flex-1 overflow-hidden rounded-full bg-card"
             >
-              <span className="sr-only">{nome}</span>
-              {i === visao && (
+              <span className="sr-only">{tituloDaVisao(v)}</span>
+              {i === atual && (
                 <span
-                  key={visao}
+                  key={passo}
                   className="block h-full origin-left bg-primary"
-                  style={{ animation: `tv-progresso ${SEGUNDOS_POR_VISAO}s linear both` }}
+                  style={{
+                    animation: `tv-progresso ${SEGUNDOS_POR_VISAO * 1000 - MS_DA_SAIDA}ms linear both`,
+                  }}
                 />
               )}
-              {i < visao && <span className="block h-full bg-input" />}
+              {i < atual && <span className="block h-full bg-input" />}
             </li>
           ))}
         </ol>

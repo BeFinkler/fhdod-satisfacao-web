@@ -15,6 +15,7 @@ import {
 import { Suspense, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router'
 import logo from '@/assets/logo.png'
+import { MenuAcessibilidade } from '@/components/MenuAcessibilidade'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -192,7 +193,8 @@ export default function PainelLayout() {
             </SheetContent>
           </Sheet>
           <img src={logo} alt="" width={450} height={150} className="h-8 w-auto lg:hidden" />
-          <div className="ml-auto min-w-0">
+          <div className="ml-auto flex min-w-0 items-center gap-1">
+            <MenuAcessibilidade />
             <MenuDoUsuario />
           </div>
         </header>

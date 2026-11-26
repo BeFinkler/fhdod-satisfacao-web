@@ -1,5 +1,7 @@
 import type { ComponentProps, ReactNode } from 'react'
+import { useLocation } from 'react-router'
 import logo from '@/assets/logo.png'
+import { MenuAcessibilidade } from '@/components/MenuAcessibilidade'
 import { cn } from '@/lib/utils'
 import { BarraProgresso } from './BarraProgresso'
 
@@ -19,9 +21,12 @@ export function Moldura({
   rodapeFixo?: boolean
   children: ReactNode
 }) {
+  // o totem tem a própria escala de texto e reinicia a cada paciente: o menu de acessibilidade fica no celular,
+  // no tablet e no computador
+  const noTotem = useLocation().pathname.startsWith('/totem/')
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pt-4 pb-5 text-lg alta:justify-center sm:px-8 sm:pt-6 sm:pb-8">
-      <header className="flex h-10 items-center gap-5">
+      <header className="@container flex min-h-10 items-center gap-5">
         <img
           src={logo}
           alt="FHDOD, Fundação Hospitalar Dr. Oswaldo Diesel"
@@ -30,6 +35,13 @@ export function Moldura({
           className="h-9 w-auto"
         />
         {progresso !== undefined && <BarraProgresso valor={progresso} />}
+        {/* nas telas com a barra de progresso, só o ícone; nas de abertura, com o nome */}
+        {!noTotem && (
+          <MenuAcessibilidade
+            rotulo={progresso === undefined ? 'se-couber' : 'oculto'}
+            className={cn('-mr-2.5 shrink-0 text-base', progresso === undefined && 'ml-auto')}
+          />
+        )}
       </header>
       <main className="@container flex flex-1 flex-col pt-7 alta:min-h-[30rem] alta:flex-none sm:pt-10">
         {children}

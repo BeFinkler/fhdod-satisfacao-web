@@ -66,8 +66,9 @@ O paciente avalia o atendimento pelo celular, lendo o QR Code do setor, ou pelo 
 | | Área | Para quem | O que faz |
 | :---: | --- | --- | --- |
 | 📱 | **Pesquisa** | O paciente, no celular, no tablet e no totem | Pelo QR Code do setor ou pelo link geral (`/avaliar`), em que a pessoa escolhe os setores. Os rostinhos de 1 a 5 e a nota de 0 a 10, com comentário e telefone para retorno opcionais. No totem, reinicia sozinha para o próximo paciente |
-| 📊 | **Painel** | A gestão, no computador e no celular | Indicadores, respostas, pedidos de retorno, cadastros, usuários, telas de TV e exportações, com o menu de cada perfil |
-| 📺 | **TV Wall** | A recepção, numa TV em tela cheia | Os números do mês, renovados a cada 30 segundos, sem nenhum dado pessoal |
+| 📊 | **Painel** | A gestão, no computador e no celular | Indicadores em seções (visão geral, desempenho, comparação entre setores e comentários), com ajuda em cada um; respostas, pedidos de retorno, cadastros, usuários, telas de TV e exportações, com o menu de cada perfil |
+| 📺 | **TV Wall** | A recepção, numa TV em tela cheia | Os números do mês em três visões que se leem de longe, sem ninguém tocar na tela, renovados a cada 30 segundos e sem nenhum dado pessoal |
+| ♿ | **Acessibilidade** | Quem usa a pesquisa, o login e o painel | O menu "Acessibilidade" no topo, com o tamanho do texto em três níveis e a tradução para Libras pelo VLibras, do governo federal |
 
 ## 🧭 Como funciona
 
