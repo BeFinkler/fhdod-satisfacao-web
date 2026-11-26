@@ -60,6 +60,14 @@ export type EnvioResposta = Contrato['EnvioResposta']
 export type RespostaCriada = Contrato['RespostaCriada']
 export type Complemento = Contrato['Complemento']
 
+/** A pesquisa geral (`/avaliar`): os setores ativos, em ordem alfabética, cada um com as suas perguntas. */
+export type PesquisaGeral = Contrato['PesquisaGeral']
+export type SetorDaPesquisa = Contrato['SetorDaPesquisa']
+/** Uma avaliação de cada setor escolhido, com a mesma nota; cada setor leva a própria chave de envio. */
+export type EnvioGeral = Contrato['EnvioGeral']
+/** A avaliação gravada num dos setores, com a classificação pelas notas daquele setor. */
+export type RespostaCriadaDoSetor = Contrato['RespostaCriadaDoSetor']
+
 // ---------- Painel: do contrato gerado ----------
 
 /**

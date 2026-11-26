@@ -766,6 +766,138 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/publico/pesquisa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Abre a pesquisa geral
+         * @description Sem login. A pesquisa do link geral (`/avaliar`), em que a pessoa escolhe um ou mais setores e responde só as perguntas deles: os setores ativos em ordem alfabética, cada um com a descrição e as perguntas ativas na ordem, os turnos e os textos que a tela usa. Sem setores ativos, a lista vem vazia.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description A pesquisa geral. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "data": {
+                         *         "setores": [
+                         *           {
+                         *             "nome": "Laboratório",
+                         *             "slug": "laboratorio",
+                         *             "descricao": "Coleta e exames",
+                         *             "perguntas": [
+                         *               {
+                         *                 "id": 21,
+                         *                 "texto": "Como foi a coleta do exame?",
+                         *                 "tipo": "ESCALA_1_5",
+                         *                 "opcoes": null
+                         *               }
+                         *             ]
+                         *           },
+                         *           {
+                         *             "nome": "Pronto Atendimento",
+                         *             "slug": "pronto-atendimento",
+                         *             "descricao": "Urgência e emergência, 24 horas",
+                         *             "perguntas": [
+                         *               {
+                         *                 "id": 12,
+                         *                 "texto": "Como foi o atendimento na recepção?",
+                         *                 "tipo": "ESCALA_1_5",
+                         *                 "opcoes": null
+                         *               },
+                         *               {
+                         *                 "id": 13,
+                         *                 "texto": "Você recebeu as orientações sobre o exame?",
+                         *                 "tipo": "MULTIPLA_ESCOLHA",
+                         *                 "opcoes": [
+                         *                   "Sim, e entendi tudo",
+                         *                   "Sim, mas fiquei com dúvidas",
+                         *                   "Não"
+                         *                 ]
+                         *               },
+                         *               {
+                         *                 "id": 14,
+                         *                 "texto": "O tempo de espera foi informado?",
+                         *                 "tipo": "SIM_NAO",
+                         *                 "opcoes": null
+                         *               }
+                         *             ]
+                         *           }
+                         *         ],
+                         *         "turnos": [
+                         *           {
+                         *             "id": 1,
+                         *             "nome": "Manhã",
+                         *             "horaInicio": "07:00",
+                         *             "horaFim": "13:00"
+                         *           },
+                         *           {
+                         *             "id": 2,
+                         *             "nome": "Tarde",
+                         *             "horaInicio": "13:00",
+                         *             "horaFim": "19:00"
+                         *           },
+                         *           {
+                         *             "id": 3,
+                         *             "nome": "Noite",
+                         *             "horaInicio": "19:00",
+                         *             "horaFim": "07:00"
+                         *           }
+                         *         ],
+                         *         "npsTexto": "De 0 a 10, qual a probabilidade de você recomendar o hospital a alguém?",
+                         *         "textoLimiteCaracteres": 500
+                         *       }
+                         *     }
+                         */
+                        "application/json": {
+                            data: components["schemas"]["PesquisaGeral"];
+                        };
+                    };
+                };
+                /** @description `ERRO_INTERNO`: erro inesperado. A mensagem é sempre a mesma, e o detalhe fica só no log. */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "erro": {
+                         *         "codigo": "ERRO_INTERNO",
+                         *         "mensagem": "Erro inesperado. Tente de novo em instantes.",
+                         *         "detalhes": [],
+                         *         "requestId": "01JC9W2K7QXZ4N5M8R3T6V0B1D"
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["Erro"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/publico/setores/{slug}/respostas": {
         parameters: {
             query?: never;
@@ -878,7 +1010,153 @@ export interface paths {
                         "application/json": components["schemas"]["Erro"];
                     };
                 };
-                /** @description `LIMITE_ATINGIDO`: mais de 30 envios do mesmo IP em 15 minutos. */
+                /** @description `LIMITE_ATINGIDO`: mais de 30 envios do mesmo IP em 15 minutos, somando os do envio de um setor e os da pesquisa geral (um envio geral conta uma vez, com qualquer número de setores). */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "erro": {
+                         *         "codigo": "LIMITE_ATINGIDO",
+                         *         "mensagem": "Muitas avaliações enviadas desta rede. Espere alguns minutos e tente de novo.",
+                         *         "detalhes": [],
+                         *         "requestId": "01JC9W2K7QXZ4N5M8R3T6V0B1D"
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["Erro"];
+                    };
+                };
+                /** @description `ERRO_INTERNO`: erro inesperado. A mensagem é sempre a mesma, e o detalhe fica só no log. */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "erro": {
+                         *         "codigo": "ERRO_INTERNO",
+                         *         "mensagem": "Erro inesperado. Tente de novo em instantes.",
+                         *         "detalhes": [],
+                         *         "requestId": "01JC9W2K7QXZ4N5M8R3T6V0B1D"
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["Erro"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/publico/respostas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Envia a avaliação de um ou mais setores
+         * @description Sem login, com o mesmo limite de envios do envio de um setor. A pesquisa geral grava, ao confirmar a nota de 0 a 10, uma avaliação por setor escolhido, todas com a mesma nota, data, turno e canal; cada uma com os itens do próprio setor, a classificação pelas notas dele e um token de complemento. As avaliações entram numa transação só: com um problema em qualquer setor, nada é gravado. A resposta vem na ordem do pedido, sem cache. O comentário e o telefone vão depois, pelo complemento de uma delas. Reenviar as mesmas chaves devolve as avaliações já gravadas, com tokens novos. O IP de quem envia não é gravado.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["EnvioGeral"];
+                };
+            };
+            responses: {
+                /** @description Avaliações gravadas (ou já gravadas, num reenvio), uma por setor, na ordem do pedido. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "data": [
+                         *         {
+                         *           "slug": "laboratorio",
+                         *           "id": 846,
+                         *           "classificacao": "NORMAL",
+                         *           "tokenComplemento": "Qm7vT1xZ8cLp3RwYk5Nd2Hf9Jb6Ks4Ga0Ue1Oi7Py3",
+                         *           "expiraEm": "2026-11-10T14:52:00.000Z"
+                         *         },
+                         *         {
+                         *           "slug": "pronto-atendimento",
+                         *           "id": 847,
+                         *           "classificacao": "BAIXA",
+                         *           "tokenComplemento": "Vn2pR8yW5qMx1LsTc7Kd4Gh0Jf3Bz9Ea6Ui2Oo8Py5",
+                         *           "expiraEm": "2026-11-10T14:52:00.000Z"
+                         *         }
+                         *       ]
+                         *     }
+                         */
+                        "application/json": {
+                            data: components["schemas"]["RespostaCriadaDoSetor"][];
+                        };
+                    };
+                };
+                /** @description `VALIDACAO`: um item em `detalhes` por problema: nenhum setor ou mais de 20 (em `setores`), setor repetido, inexistente ou desativado (em `setores.N.slug`), chave repetida ou que não é UUID (em `setores.N.chaveIdempotencia`), pergunta que não é uma ativa daquele setor ou repetida (em `setores.N.itens.M`), valor errado para o tipo da pergunta (em `setores.N.itens.M.valorNumero` ou `setores.N.itens.M.valorTexto`), e o NPS, a data, o turno e o campo isca como no envio de um setor. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "erro": {
+                         *         "codigo": "VALIDACAO",
+                         *         "mensagem": "Dados inválidos",
+                         *         "detalhes": [
+                         *           {
+                         *             "campo": "setores.1.slug",
+                         *             "mensagem": "Este setor não está recebendo avaliações agora"
+                         *           }
+                         *         ],
+                         *         "requestId": "01JC9W2K7QXZ4N5M8R3T6V0B1D"
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["Erro"];
+                    };
+                };
+                /** @description `CONFLITO`: só parte das chaves já foi gravada, uma chave foi usada noutro setor ou uma das avaliações já foi complementada. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "erro": {
+                         *         "codigo": "CONFLITO",
+                         *         "mensagem": "Esta avaliação já foi enviada. Obrigado por responder!",
+                         *         "detalhes": [],
+                         *         "requestId": "01JC9W2K7QXZ4N5M8R3T6V0B1D"
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["Erro"];
+                    };
+                };
+                /** @description `LIMITE_ATINGIDO`: mais de 30 envios do mesmo IP em 15 minutos, somando os do envio de um setor e os da pesquisa geral (um envio geral conta uma vez, com qualquer número de setores). */
                 429: {
                     headers: {
                         [name: string]: unknown;
@@ -7125,7 +7403,7 @@ export interface components {
                  */
                 texto: string;
             };
-            /** @description O pedido de retorno, se a pessoa deixou o telefone. A tela o oferece na avaliação baixa. */
+            /** @description O pedido de retorno, se a pessoa deixou o telefone. A pesquisa pela web o oferece a todos, no fim; o totem, só na avaliação baixa. */
             contato?: {
                 /**
                  * @description Com DDD, de 10 ou 11 dígitos, com ou sem a máscara (espaços, parênteses, hífen e ponto). É gravado cifrado, só com os dígitos.
@@ -7145,6 +7423,46 @@ export interface components {
             campo: string;
             /** @description O que está errado no campo, em português, para mostrar na tela. */
             mensagem: string;
+        };
+        /** @description As respostas de um setor escolhido, com a chave de envio dele. */
+        EnvioDoSetor: {
+            /**
+             * @description O `slug` de um setor ativo, como veio na pesquisa geral.
+             * @example raio-x
+             */
+            slug: string;
+            /**
+             * Format: uuid
+             * @description UUID criado pelo front a cada avaliação e repetido em cada nova tentativa do mesmo envio. A mesma chave devolve a avaliação já gravada, sem criar outra.
+             * @example 4b7e0c1a-9d2f-4c11-8a35-1f0e6b2d7c90
+             */
+            chaveIdempotencia: string;
+            /**
+             * @description Uma resposta por pergunta ativa do setor, no máximo; as puladas não vêm, e a lista pode ser vazia.
+             * @default []
+             */
+            itens: components["schemas"]["ItemEnvio"][];
+        };
+        /** @description A avaliação de um ou mais setores, da pesquisa geral, gravada ao confirmar a nota de 0 a 10. A nota vale para todos os setores escolhidos. */
+        EnvioGeral: {
+            canal: components["schemas"]["Canal"];
+            /**
+             * Format: date
+             * @description O dia do atendimento, em AAAA-MM-DD; não pode ser depois de hoje no horário de Brasília.
+             * @example 2026-11-10
+             */
+            dataAtendimento: string;
+            /** @example 1 */
+            turnoId: number;
+            /**
+             * @description A nota de 0 a 10, obrigatória.
+             * @example 6
+             */
+            nps: number;
+            /** @description Campo isca: o formulário o mantém invisível para pessoas (fora da tela, com `tabindex="-1"` e `autocomplete="off"`) e o envia vazio, ou não o envia. Preenchido, o envio é recusado e nada é gravado. */
+            site?: string;
+            /** @description De 1 a 20 setores, sem repetir o setor nem a chave, na ordem em que a pessoa os escolheu. Cada um vira uma avaliação, com a nota, a data e o turno do envio. */
+            setores: components["schemas"]["EnvioDoSetor"][];
         };
         /** @description Uma avaliação, gravada ao confirmar a nota de 0 a 10. */
         EnvioResposta: {
@@ -7412,6 +7730,30 @@ export interface components {
          * @enum {string}
          */
         Permissao: "setores:gerenciar" | "usuarios:gerenciar" | "categorias:gerenciar" | "turnos:gerenciar" | "tvwall:gerenciar" | "configuracoes:gerenciar" | "auditoria:ver" | "perguntas:gerenciar" | "dashboard:ver" | "respostas:ver" | "comentarios:ver" | "contatos:ver" | "contatos:gerenciar" | "exportacao:resumo" | "exportacao:detalhada" | "escalas:gerenciar";
+        /** @description A pesquisa do link geral (`/avaliar`): a pessoa escolhe um ou mais setores e responde só as perguntas deles. Os limites de nota baixa não vêm: a classificação é da API. */
+        PesquisaGeral: {
+            /** @description Os setores ativos, em ordem alfabética. Vazia quando nenhum está ativo. */
+            setores: components["schemas"]["SetorDaPesquisa"][];
+            /** @description Todos os turnos, na ordem definida. */
+            turnos: {
+                id: number;
+                nome: string;
+                /**
+                 * @description Início, em HH:mm.
+                 * @example 07:00
+                 */
+                horaInicio: string;
+                /**
+                 * @description Fim, em HH:mm. Menor que o início quando o turno passa da meia-noite.
+                 * @example 13:00
+                 */
+                horaFim: string;
+            }[];
+            /** @description O texto da pergunta de 0 a 10. */
+            npsTexto: string;
+            /** @description Tamanho máximo das respostas em texto e dos comentários. */
+            textoLimiteCaracteres: number;
+        };
         /** @description O que a tela da pesquisa precisa, lido do cadastro e das configurações. Os limites de nota baixa não vêm: a classificação é da API. */
         PesquisaPublica: {
             setor: {
@@ -7470,6 +7812,20 @@ export interface components {
         };
         /** @description A avaliação gravada. */
         RespostaCriada: {
+            id: number;
+            classificacao: components["schemas"]["Classificacao"];
+            /** @description Para anexar o comentário e o telefone, no cabeçalho `X-Complemento-Token`, uma vez só. Um reenvio com a mesma chave recebe outro, que substitui este. */
+            tokenComplemento: string;
+            /**
+             * Format: date-time
+             * @description Até quando o token vale: 30 minutos depois do envio.
+             */
+            expiraEm: string;
+        };
+        /** @description A avaliação gravada num dos setores do envio geral, com a classificação pelas notas daquele setor. */
+        RespostaCriadaDoSetor: {
+            /** @description O setor desta avaliação, como veio no envio. */
+            slug: string;
             id: number;
             classificacao: components["schemas"]["Classificacao"];
             /** @description Para anexar o comentário e o telefone, no cabeçalho `X-Complemento-Token`, uma vez só. Um reenvio com a mesma chave recebe outro, que substitui este. */
@@ -7624,6 +7980,16 @@ export interface components {
             descricao: string | null;
             /** @description Setor inativo sai da pesquisa pública, mas o histórico dele continua nos indicadores. */
             ativo: boolean;
+        };
+        /** @description Um setor que a pessoa pode escolher na pesquisa geral, com as perguntas dele. */
+        SetorDaPesquisa: {
+            nome: string;
+            /** @description O endereço do setor, que identifica o setor no envio. */
+            slug: string;
+            /** @description O que o setor atende, para a pessoa reconhecer por onde passou; `null` quando não há. */
+            descricao: string | null;
+            /** @description Só as ativas, na ordem da pesquisa do setor. Pode ser vazia. */
+            perguntas: components["schemas"]["PerguntaPublica"][];
         };
         /**
          * @description Onde está o retorno ao paciente. No MVP, todo pedido fica `NOVO`; os outros status são do fluxo da fase 2.
