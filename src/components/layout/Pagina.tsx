@@ -1,6 +1,6 @@
 import type { UseQueryResult } from '@tanstack/react-query'
 import { TriangleAlert } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { mensagemGeral } from '@/lib/api/erro'
@@ -33,26 +33,67 @@ export function Pagina({
   )
 }
 
+/**
+ * Seção de uma página longa: um título e uma frase dizendo para que ela serve, com os blocos do mesmo assunto
+ * dentro. As seções ficam mais afastadas entre si do que os blocos de cada uma, e o título é um h2 de verdade,
+ * para o leitor de tela pular de seção em seção. A seção mede a própria largura (`@container`): os blocos dela
+ * se rearrumam pelo espaço que têm, que também muda quando a pessoa aumenta o texto.
+ */
+export function Secao({
+  titulo,
+  descricao,
+  children,
+}: {
+  titulo: string
+  descricao?: ReactNode
+  children: ReactNode
+}) {
+  const id = useId()
+  return (
+    <section aria-labelledby={id} className="@container grid min-w-0 gap-4">
+      <div>
+        <h2 id={id} className="text-lg font-semibold">
+          {titulo}
+        </h2>
+        {descricao && <p className="mt-0.5 text-sm text-muted-foreground">{descricao}</p>}
+      </div>
+      {children}
+    </section>
+  )
+}
+
 /** Bloco de conteúdo: superfície plana com borda, sem sombra. */
 export function Bloco({
   titulo,
+  nivel = 2,
+  ajuda,
   descricao,
   lateral,
   className,
   children,
 }: {
   titulo?: string
+  /** h2 numa página simples; h3 quando o bloco está dentro de uma `Secao` */
+  nivel?: 2 | 3
+  /** o botão de ajuda (`Ajuda`), ao lado do título */
+  ajuda?: ReactNode
   descricao?: ReactNode
   lateral?: ReactNode
   className?: string
   children: ReactNode
 }) {
+  const Titulo = nivel === 3 ? 'h3' : 'h2'
   return (
     <section className={cn('min-w-0 rounded-lg border bg-card p-4 sm:p-5', className)}>
       {(titulo || lateral) && (
         <div className="mb-4 flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-          <div>
-            {titulo && <h2 className="text-base font-semibold">{titulo}</h2>}
+          <div className="min-w-0">
+            {titulo && (
+              <div className="flex items-center gap-1">
+                <Titulo className="text-base font-semibold">{titulo}</Titulo>
+                {ajuda && <span className="-my-1.5">{ajuda}</span>}
+              </div>
+            )}
             {descricao && <p className="mt-0.5 text-sm text-muted-foreground">{descricao}</p>}
           </div>
           {lateral}
