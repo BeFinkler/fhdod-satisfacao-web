@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { ListChecks, Pencil, Plus, Printer, QrCode } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useForm, useWatch } from 'react-hook-form'
 import { Link } from 'react-router'
@@ -95,27 +95,43 @@ function Formulario({ setor, aoFechar }: { setor: Setor | null; aoFechar: () => 
   )
 }
 
-/** Links e QR Code do setor, com a folha pronta para imprimir e colar na parede. */
-function LinksDoSetor({ setor, aoFechar }: { setor: Setor; aoFechar: () => void }) {
-  const pesquisa = `${window.location.origin}/s/${setor.slug}`
+/**
+ * Links e QR Code de uma pesquisa (a de um setor ou a geral), com a folha pronta para imprimir e colar na
+ * parede. A folha fica fora da tela e é a única coisa que sai na impressão.
+ */
+function LinksDaPesquisa({
+  titulo,
+  descricao,
+  link,
+  totem,
+  rotuloDoQr,
+  convite,
+  duracao,
+  aoFechar,
+}: {
+  titulo: string
+  descricao: string
+  link: string
+  /** só nos setores: o link do aparelho fixo */
+  totem?: string
+  rotuloDoQr: string
+  /** a frase acima do QR Code, na folha impressa */
+  convite: ReactNode
+  /** "leva menos de 2 minutos", na folha impressa */
+  duracao: string
+  aoFechar: () => void
+}) {
   return (
     <Dialog open onOpenChange={(abrir) => !abrir && aoFechar()}>
       <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Links e QR Code: {setor.nome}</DialogTitle>
-          <DialogDescription>
-            O QR Code leva direto à pesquisa deste setor, sem cadastro nem senha.
-          </DialogDescription>
+          <DialogTitle>{titulo}</DialogTitle>
+          <DialogDescription>{descricao}</DialogDescription>
         </DialogHeader>
-        <CampoCopiavel rotulo="Link da pesquisa" valor={pesquisa} />
-        <CampoCopiavel rotulo="Link do totem" valor={`${window.location.origin}/totem/${setor.slug}`} />
+        <CampoCopiavel rotulo="Link da pesquisa" valor={link} />
+        {totem && <CampoCopiavel rotulo="Link do totem" valor={totem} />}
         <div className="flex flex-col items-center gap-3 rounded-lg border p-4">
-          <QRCodeSVG
-            value={pesquisa}
-            size={176}
-            marginSize={2}
-            title={`QR Code da pesquisa do setor ${setor.nome}`}
-          />
+          <QRCodeSVG value={link} size={176} marginSize={2} title={rotuloDoQr} />
           <Button onClick={() => window.print()}>
             <Printer aria-hidden />
             Imprimir folha com o QR Code
@@ -127,16 +143,68 @@ function LinksDoSetor({ setor, aoFechar }: { setor: Setor; aoFechar: () => void 
         <div className="folha-qr">
           <img src={logo} alt="FHDOD" width={450} height={150} style={{ height: '22mm', width: 'auto' }} />
           <h1>Como foi o seu atendimento?</h1>
-          <p>
-            Aponte a câmera do celular para o código e avalie o setor <strong>{setor.nome}</strong>.
-          </p>
-          <QRCodeSVG value={pesquisa} size={340} marginSize={2} />
-          <p>É anônimo e leva menos de 2 minutos.</p>
-          <small>{pesquisa.replace(/^https?:\/\//, '')}</small>
+          <p>{convite}</p>
+          <QRCodeSVG value={link} size={340} marginSize={2} />
+          <p>É anônimo e {duracao}.</p>
+          <small>{link.replace(/^https?:\/\//, '')}</small>
         </div>,
         document.body,
       )}
     </Dialog>
+  )
+}
+
+/** Links e QR Code do setor. */
+function LinksDoSetor({ setor, aoFechar }: { setor: Setor; aoFechar: () => void }) {
+  return (
+    <LinksDaPesquisa
+      titulo={`Links e QR Code: ${setor.nome}`}
+      descricao="O QR Code leva direto à pesquisa deste setor, sem cadastro nem senha."
+      link={`${window.location.origin}/s/${setor.slug}`}
+      totem={`${window.location.origin}/totem/${setor.slug}`}
+      rotuloDoQr={`QR Code da pesquisa do setor ${setor.nome}`}
+      convite={
+        <>
+          Aponte a câmera do celular para o código e avalie o setor <strong>{setor.nome}</strong>.
+        </>
+      }
+      duracao="leva menos de 2 minutos"
+      aoFechar={aoFechar}
+    />
+  )
+}
+
+/**
+ * O link geral (`/avaliar`), em que a pessoa escolhe os setores: o que o hospital divulga no WhatsApp, no site e
+ * em cartazes fora dos setores, no lugar do link antigo do formulário.
+ */
+function LinkGeral() {
+  const [aberto, setAberto] = useState(false)
+  const link = `${window.location.origin}/avaliar`
+  return (
+    <Bloco
+      titulo="Link geral da pesquisa"
+      descricao="A pessoa escolhe os setores por onde passou e responde só as perguntas deles. Para divulgar no WhatsApp, no site e em cartazes fora dos setores."
+    >
+      <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+        <CampoCopiavel rotulo="Link da pesquisa geral" valor={link} />
+        <Button variant="outline" onClick={() => setAberto(true)}>
+          <QrCode aria-hidden />
+          QR Code para imprimir
+        </Button>
+      </div>
+      {aberto && (
+        <LinksDaPesquisa
+          titulo="Link geral e QR Code"
+          descricao="O QR Code leva à pesquisa geral, sem cadastro nem senha: a pessoa escolhe os setores que quer avaliar."
+          link={link}
+          rotuloDoQr="QR Code da pesquisa geral"
+          convite="Aponte a câmera do celular para o código, escolha os setores por onde você passou e conte como foi."
+          duracao="leva poucos minutos"
+          aoFechar={() => setAberto(false)}
+        />
+      )}
+    </Bloco>
   )
 }
 
@@ -165,6 +233,7 @@ export default function SetoresPage() {
         )
       }
     >
+      {podeGerenciar && <LinkGeral />}
       <Bloco>
         <Consulta
           consulta={consulta}
