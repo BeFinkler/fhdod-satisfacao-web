@@ -1,5 +1,5 @@
-import { Suspense, useEffect } from 'react'
-import { Link, Outlet, useLocation } from 'react-router'
+import { Suspense, useEffect, useRef } from 'react'
+import { Link, Outlet, useLocation, useNavigationType } from 'react-router'
 import { Carregando, TelaMensagem } from '@/components/TelaMensagem'
 import { carregarVLibras } from '@/lib/vlibras'
 import { useAcessibilidade } from '@/stores/acessibilidade'
@@ -35,10 +35,28 @@ function useVLibrasNaPagina() {
   }, [semVLibras])
 }
 
+/**
+ * Ao ir para outra página por um link, ela abre no topo: sem isso, quem clicava em "Ver a resposta" no fim do
+ * dashboard caía no meio da lista de respostas. Trocar um filtro (só a query string muda) não sobe a página, e o
+ * "Voltar" do navegador fica com a rolagem que ele mesmo devolve. Não usa o ScrollRestoration do React Router,
+ * que guardaria as posições no sessionStorage: o front não guarda nada no navegador.
+ */
+function useTopoAoTrocarDePagina() {
+  const { pathname } = useLocation()
+  const tipo = useNavigationType()
+  const anterior = useRef(pathname)
+  useEffect(() => {
+    if (anterior.current === pathname) return
+    anterior.current = pathname
+    if (tipo !== 'POP') window.scrollTo(0, 0)
+  }, [pathname, tipo])
+}
+
 /** Cada área (pesquisa, totem, painel, TV) é baixada só quando alguém a acessa. */
 export function Raiz() {
   useTamanhoDoTexto()
   useVLibrasNaPagina()
+  useTopoAoTrocarDePagina()
   return (
     <Suspense fallback={<Carregando />}>
       <Outlet />
