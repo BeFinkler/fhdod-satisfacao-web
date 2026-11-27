@@ -128,6 +128,7 @@ O `pnpm dev` repassa tudo o que começa com `/api` para a API em `http://localho
 | Endereço | O que abre |
 | --- | --- |
 | <http://localhost:5173/login> | O painel: entre com uma das contas abaixo |
+| <http://localhost:5173/painel/ajuda> | A Ajuda do painel, para todos os perfis: o menu, os indicadores, a pesquisa, a senha, como colocar a TV no ar e o contato de quem desenvolveu o sistema |
 | <http://localhost:5173/avaliar> | A pesquisa geral, no lugar do link do Google Forms: a pessoa escolhe os setores e responde só as perguntas deles |
 | <http://localhost:5173/s/pronto-atendimento> | A pesquisa do setor, para onde o QR Code leva |
 | <http://localhost:5173/totem/pronto-atendimento> | A mesma pesquisa no modo totem |
@@ -168,6 +169,21 @@ Cadastre pelo próprio painel, com o Super Admin que o `pnpm db:seed` cria (o `S
 - para entrar com os outros perfis, os usuários, em "Usuários": a senha provisória aparece uma vez só, ao criar a conta ou ao redefinir a senha, com o botão de copiar;
 - para o dashboard, as respostas, os pedidos de retorno e a TV terem o que mostrar, avaliações respondidas na pesquisa. O telefone para retorno é oferecido na avaliação baixa;
 - para a TV, uma tela, em "Telas de TV": o link dela, com o token depois do `#`, aparece uma vez só, ao criar a tela.
+
+</details>
+
+<details>
+<summary><b>📺 Colocar a TV no ar</b></summary>
+
+O passo a passo também está dentro do sistema, na Ajuda (`/painel/ajuda#tv`), e na janela do link, para quem não abre o GitHub.
+
+1. Em "Telas de TV", "Nova tela", com o lugar onde a TV fica.
+2. Copie o link, que aparece uma vez só. Se quem instala a TV é outra pessoa (a TI, por exemplo), o link vai para ela por e-mail ou pelo chat interno: ela não precisa de acesso ao painel nem ao GitHub.
+3. Abra o link no navegador da TV e toque uma vez na tela, para ela ficar em tela cheia.
+4. Confira em "Telas de TV" o "Último acesso", que mostra que a TV abriu.
+5. Se o link se perder ou vazar: "Desativar" e criar outra tela.
+
+O mais simples é um computador pequeno ou uma TV box ligada à TV, com o Chrome em modo quiosque (`chrome --kiosk <link>`) abrindo o link ao ligar e o descanso de tela desligado. Numa Smart TV só com o controle remoto, um teclado USB ou Bluetooth resolve a digitação do link.
 
 </details>
 
